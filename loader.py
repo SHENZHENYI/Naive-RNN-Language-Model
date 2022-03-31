@@ -1,24 +1,23 @@
 import torch
 import numpy as np
+import random
 
 def load_raw_data(data_path):
-    '''Load raw text data into one big String
+    '''Load raw text data into one big String, and get the vocabulary of the data at char level
 
     Args:
         data_path: the path of the corpus text file
 
     Returns:
-        string that represents the whole data
+        data: string that represents the whole data
+        vocab: a vocabulary set of the raw data
     '''
-    valid_char_set = set('qwertyuiopasdfghjklzxxcvbnm ')
-    invalid_char_set = set(['t', "'", '3', 'm', 'f', 'i', '>', '}', 'p', '2', '-', 'a', 'k', '`', ';', ':', '4', 's', '1', '{', 'v', 'g', 'h', '(', '<', '%', 'x', '&', '"', 'q', ',', 'j', ']', ' ', '#', 'u', 'l', '?', '_', 'w', 'n', 'z', '9', '$', '~', '*', 'y', '|', '0', 'd', '=', 'b', ')', '!', 'é', '@', '8', 'o', '[', '^', 'r', '+', '.', '7', '6', 'e', '/', 'c', '5']) - valid_char_set
     with open(data_path, 'r') as f:
-        data = f.read().replace('\n', ' ').lower()
-    for char_ in invalid_char_set:
-        data = data.replace(char_, '')
-    return data
+        data = f.read()
+    vocab = list(set(data))
+    return data, vocab
 
-def encode_str_data(data):
+def encode_str_data(data, vocab):
     '''Get the data from string to integer
 
     This function gets a string in, and returns the same context in integer representation encoded by 'char_set'
@@ -29,14 +28,18 @@ def encode_str_data(data):
     Returns:
         same data in torch long
     '''
-    char_set = ['n', 'm', 'b', 'w', 'k', 't', 'h', 'z', 'r', 'e', 'l', 'a', 'g', 'i', 'p', 'v', 'o', 'q', 'j', 'f', 'd', 'x', ' ', 's', 'c', 'u', 'y']
-    char2int = {c: i for i, c in enumerate(char_set)}
+    char2int = {c: i for i, c in enumerate(vocab)}
 
-    int_data = []
-    for i in range(len(data)):
-        int_data.append([])
-        for j in range(len(data[0])):
-            int_data[i].append(char2int[data[i][j]])
+    if isinstance(data, list):
+        int_data = []
+        for i in range(len(data)):
+            int_data.append([])
+            for j in range(len(data[0])):
+                int_data[i].append(char2int[data[i][j]])
+    elif isinstance(data, str):
+        int_data = char2int[data]
+    else:
+        raise TypeError(f'{data} has a wrong data type')
     return torch.tensor(int_data).long()
 
 def decode_str_data(data):
@@ -46,7 +49,7 @@ def decode_str_data(data):
     str_data = [int2char[i] for i in data]
     return str_data
 
-def get_minibatch(raw_data, batchsize, seq_len, shuffle=True):
+def get_minibatch(raw_data, vocab, batchsize, seq_len, shuffle=True):
     '''Get the minibatch
 
     This function yields minibatches of the raw data, which can be fed into the model after doing one-hot encoding
@@ -61,17 +64,18 @@ def get_minibatch(raw_data, batchsize, seq_len, shuffle=True):
         yield minibatches of the input data. The dimension is (seq_len, batchsize,)
     '''
     len_data = len(raw_data)
-    indices = np.arange(0, len_data, batchsize*seq_len)
+    start_seed = random.randrange(0,200)
+    indices = np.arange(start_seed, len_data-seq_len, batchsize)
     if shuffle:
         np.random.shuffle(indices)
     for i in range(len(indices)):
         starts = indices[i:i+batchsize]
         texts = [raw_data[start:start+seq_len] for start in starts]
-        yield encode_str_data(texts).T
+        yield encode_str_data(texts, vocab).T
 
 if __name__ == '__main__':
-    data_path = '../corpus/paul_graham_essay.txt'
-    data = load_raw_data(data_path).lower()
-    print((list(set(data))))
+    data_path = './data/paul_graham_essay.txt'
+    data, vocab = load_raw_data(data_path)
+    print(vocab)
 
 
