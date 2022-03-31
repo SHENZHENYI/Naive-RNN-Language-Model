@@ -14,7 +14,7 @@ def load_raw_data(data_path):
     '''
     with open(data_path, 'r') as f:
         data = f.read()
-    vocab = list(set(data))
+    vocab = sorted(list(set(data)))
     return data, vocab
 
 def encode_str_data(data, vocab):
@@ -23,13 +23,13 @@ def encode_str_data(data, vocab):
     This function gets a string in, and returns the same context in integer representation encoded by 'char_set'
 
     Args:
-        data: string data
+        data: list of list of string or just string
+        vocab: vocabulary set
 
     Returns:
-        same data in torch long
+        encoded data
     '''
     char2int = {c: i for i, c in enumerate(vocab)}
-
     if isinstance(data, list):
         int_data = []
         for i in range(len(data)):
@@ -42,17 +42,10 @@ def encode_str_data(data, vocab):
         raise TypeError(f'{data} has a wrong data type')
     return torch.tensor(int_data).long()
 
-def decode_str_data(data):
-    char_set = ['n', 'm', 'b', 'w', 'k', 't', 'h', 'z', 'r', 'e', 'l', 'a', 'g', 'i', 'p', 'v', 'o', 'q', 'j', 'f', 'd', 'x', ' ', 's', 'c', 'u', 'y']
-
-    int2char = {i:c for i, c in enumerate(char_set)}
-    str_data = [int2char[i] for i in data]
-    return str_data
-
 def get_minibatch(raw_data, vocab, batchsize, seq_len, shuffle=True):
     '''Get the minibatch
 
-    This function yields minibatches of the raw data, which can be fed into the model after doing one-hot encoding
+    This function yields minibatches of the raw data, which can be fed into the model directly
 
     Args:
         raw_data: text data in integer format

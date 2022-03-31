@@ -7,7 +7,7 @@ import random
 from model import RnnModel
 from loader import load_raw_data, get_minibatch, encode_str_data, decode_str_data
 
-def train(n_epochs, model, raw_data, loss_fn, optimizer, device, vocab, batchsize=8, seq_len=100, pred_seq_len=200):
+def train(n_epochs, model, raw_data, loss_fn, optimizer, device, vocab, model_path, batchsize=8, seq_len=100, pred_seq_len=200):
     '''Train
 
     This function trains the model by wrapping 'train_one_epoch'
@@ -23,11 +23,11 @@ def train(n_epochs, model, raw_data, loss_fn, optimizer, device, vocab, batchsiz
         no returns. the model will be updated.
     '''
     for epoch in range(n_epochs):
-        loss = train_one_epoch(model, raw_data[:500], loss_fn, optimizer, batchsize, device, seq_len, vocab)
+        loss = train_one_epoch(model, raw_data, loss_fn, optimizer, batchsize, device, seq_len, vocab, model_path)
         print(f'epoch: {epoch}, loss: {loss}')
         predict(model, raw_data, device, vocab, seq_len=pred_seq_len)
 
-def train_one_epoch(model, raw_data, loss_fn, optimizer, batchsize, device, seq_len, vocab):
+def train_one_epoch(model, raw_data, loss_fn, optimizer, batchsize, device, seq_len, vocab, model_path):
     '''Training process in one epoch
 
     Args:
@@ -57,6 +57,7 @@ def train_one_epoch(model, raw_data, loss_fn, optimizer, batchsize, device, seq_
             optimizer.step()
             prog.update(1)
             loss_meter.append(loss.item())
+            save_model(model, model_path)
     return sum(loss_meter)/len(loss_meter)
 
 def predict(model, raw_data, device, vocab, seq_len=200):
@@ -85,18 +86,29 @@ def predict(model, raw_data, device, vocab, seq_len=200):
         out_str.append(sample)
     print(seed+''.join(out_str))
 
+def save_model(model, save_path):
+    torch.save(model.state_dict(), save_path)
+
+def load_model(model, save_path):
+    model.load_state_dict(torch.load(save_path))
 
 def main():
+    training_mode = 0
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f'my device is {device}')
 
     data_path = './data/shakespeare.txt'
+    model_path = './weights/rnn.pth'
     raw_data, vocab = load_raw_data(data_path)
-    rnn = RnnModel(vocab_size=len(vocab), emb_size=26, hidden_size=128, num_layers=2).to(device)
-    optimizer = optim.Adam(rnn.parameters(), lr=0.002)
+    model = RnnModel(vocab_size=len(vocab), emb_size=26, hidden_size=128, num_layers=2).to(device)
+    optimizer = optim.Adam(model.parameters(), lr=0.002)
     loss_fn = nn.CrossEntropyLoss()
 
-    train(100, rnn, raw_data, loss_fn, optimizer, device, vocab, batchsize=4, seq_len=100, pred_seq_len=200)
+    if training_mode:
+        train(100, model, raw_data, loss_fn, optimizer, device, vocab, model_path, batchsize=32, seq_len=100, pred_seq_len=200)
+    else:
+        load_model(model, model_path)
+        predict(model, raw_data, device, vocab, seq_len=200)
     
 if __name__ == '__main__':
     main()
