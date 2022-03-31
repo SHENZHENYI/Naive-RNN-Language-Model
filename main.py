@@ -7,7 +7,7 @@ import random
 from model import RnnModel
 from loader import load_raw_data, get_minibatch, encode_str_data, decode_str_data
 
-def train(n_epochs, model, raw_data, loss_fn, optimizer, device, batchsize=8, seq_len=100, pred_seq_len=200, vocab_size=27):
+def train(n_epochs, model, raw_data, loss_fn, optimizer, device, char_set, batchsize=8, seq_len=100, pred_seq_len=200, vocab_size=27):
     '''Train
 
     This function trains the model by wrapping 'train_one_epoch'
@@ -25,7 +25,7 @@ def train(n_epochs, model, raw_data, loss_fn, optimizer, device, batchsize=8, se
     for epoch in range(n_epochs):
         loss = train_one_epoch(model, raw_data[:500000], loss_fn, optimizer, batchsize, device, seq_len, vocab_size)
         print(f'epoch: {epoch}, loss: {loss}')
-        predict(model, raw_data, seq_len=pred_seq_len)
+        predict(model, raw_data, device, char_set, seq_len=pred_seq_len)
 
 def train_one_epoch(model, raw_data, loss_fn, optimizer, batchsize, device, seq_len, vocab_size):
     '''Training process in one epoch
@@ -59,7 +59,7 @@ def train_one_epoch(model, raw_data, loss_fn, optimizer, batchsize, device, seq_
             loss_meter.append(loss.item())
     return sum(loss_meter)/len(loss_meter)
 
-def predict(model, raw_data, seq_len=200):
+def predict(model, raw_data, device, char_set, seq_len=200):
     '''Predict a sequence with a length of 200 when fed with a random char
 
     Args:
@@ -72,7 +72,7 @@ def predict(model, raw_data, seq_len=200):
     '''
     model.eval()
     hidden = None
-    rand_index = 25
+    rand_index = random.randrange(0, len(raw_data)-seq_len)
     input = encode_str_data(raw_data[rand_index: rand_index + 1])
     #input = F.one_hot(encode_str_data(input_seq), num_classes=95).to(torch.float32)
     out_str = []
@@ -95,7 +95,7 @@ def main():
     optimizer = optim.Adam(rnn.parameters(), lr=0.002)
     loss_fn = nn.CrossEntropyLoss()
 
-    train(100, rnn, raw_data, loss_fn, optimizer, device, batchsize=8, seq_len=25, pred_seq_len=25)
+    train(100, rnn, raw_data, loss_fn, optimizer, device, char_set, batchsize=32, seq_len=25, pred_seq_len=25)
     
 if __name__ == '__main__':
     main()
