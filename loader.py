@@ -57,11 +57,11 @@ def get_minibatch(raw_data, vocab, batchsize, seq_len, shuffle=True):
         yield minibatches of the input data. The dimension is (seq_len, batchsize,)
     '''
     len_data = len(raw_data)
-    start_seed = random.randrange(0,200)
+    start_seed = random.randrange(0,200) # more random
     indices = np.arange(start_seed, len_data-seq_len, seq_len)
     if shuffle:
         np.random.shuffle(indices)
-    for i in range(len(indices)):
+    for i in range(0, len(indices), batchsize):
         starts = indices[i:i+batchsize]
         texts = [raw_data[start:start+seq_len] for start in starts]
         yield encode_str_data(texts, vocab).T

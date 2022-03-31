@@ -93,7 +93,7 @@ def load_model(model, save_path):
     model.load_state_dict(torch.load(save_path))
 
 def main():
-    training_mode = 0
+    training_mode = 0 # train or inference
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f'my device is {device}')
 
