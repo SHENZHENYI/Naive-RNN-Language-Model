@@ -5,7 +5,7 @@ from tqdm import tqdm
 import random
 
 from model import RnnModel
-from loader import load_raw_data, get_minibatch, encode_str_data, decode_str_data
+from loader import load_raw_data, get_minibatch, encode_str_data
 
 def train(n_epochs, model, raw_data, loss_fn, optimizer, device, vocab, model_path, batchsize=8, seq_len=100, pred_seq_len=200):
     '''Train
@@ -43,7 +43,7 @@ def train_one_epoch(model, raw_data, loss_fn, optimizer, batchsize, device, seq_
         model is not returned, but will be updated.
     '''
     model.train()
-    n_minibatches = len(raw_data)//(batchsize)
+    n_minibatches = len(raw_data)//(seq_len*batchsize)
     loss_meter = []
     with tqdm(total=(n_minibatches)) as prog:
         for iter_, batch in enumerate(get_minibatch(raw_data, vocab, batchsize, seq_len, shuffle=True)):

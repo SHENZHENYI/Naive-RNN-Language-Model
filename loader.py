@@ -58,7 +58,7 @@ def get_minibatch(raw_data, vocab, batchsize, seq_len, shuffle=True):
     '''
     len_data = len(raw_data)
     start_seed = random.randrange(0,200)
-    indices = np.arange(start_seed, len_data-seq_len, batchsize)
+    indices = np.arange(start_seed, len_data-seq_len, seq_len)
     if shuffle:
         np.random.shuffle(indices)
     for i in range(len(indices)):
