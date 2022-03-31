@@ -52,7 +52,7 @@ def train_one_epoch(model, raw_data, loss_fn, optimizer, batchsize, device, seq_
             x = batch[:-1, :].to(device) # F.one_hot(batch[:-1,:], num_classes=95).to(torch.float32)
             y = batch[1:,:].to(device)
             outputs, _ = model(x, hidden)
-            loss = loss_fn(outputs.view(-1, vocab_size), y.view(-1))
+            loss = loss_fn(outputs.view(-1, vocab_size), y.contiguous().view(-1))
             loss.backward()
             optimizer.step()
             prog.update(1)
@@ -73,7 +73,8 @@ def predict(model, raw_data, device, char_set, seq_len=200):
     model.eval()
     hidden = None
     rand_index = random.randrange(0, len(raw_data)-seq_len)
-    input = encode_str_data(raw_data[rand_index: rand_index + 1])
+    seed = raw_data[rand_index: rand_index + 1]
+    input = encode_str_data(seed)
     #input = F.one_hot(encode_str_data(input_seq), num_classes=95).to(torch.float32)
     out_str = []
     for i in range(seq_len):
@@ -82,20 +83,20 @@ def predict(model, raw_data, device, char_set, seq_len=200):
         sample = random.choices(char_set, weights=probs)[0] # sample with the prob
         input = encode_str_data([sample])
         out_str.append(sample)
-    print(''.join(out_str))
+    print(seed+''.join(out_str))
 
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f'my device is {device}')
 
     char_set = ['n', 'm', 'b', 'w', 'k', 't', 'h', 'z', 'r', 'e', 'l', 'a', 'g', 'i', 'p', 'v', 'o', 'q', 'j', 'f', 'd', 'x', ' ', 's', 'c', 'u', 'y']
-    data_path = './data/paul_graham_essay.txt'
+    data_path = './data/shakespeare.txt'
     raw_data = load_raw_data(data_path)
     rnn = RnnModel(vocab_size=27, emb_size=27, hidden_size=128, num_layers=2).to(device)
     optimizer = optim.Adam(rnn.parameters(), lr=0.002)
     loss_fn = nn.CrossEntropyLoss()
 
-    train(100, rnn, raw_data, loss_fn, optimizer, device, char_set, batchsize=32, seq_len=25, pred_seq_len=25)
+    train(100, rnn, raw_data, loss_fn, optimizer, device, char_set, batchsize=4, seq_len=25, pred_seq_len=25)
     
 if __name__ == '__main__':
     main()

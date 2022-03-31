@@ -30,9 +30,13 @@ def encode_str_data(data):
         same data in torch long
     '''
     char_set = ['n', 'm', 'b', 'w', 'k', 't', 'h', 'z', 'r', 'e', 'l', 'a', 'g', 'i', 'p', 'v', 'o', 'q', 'j', 'f', 'd', 'x', ' ', 's', 'c', 'u', 'y']
-
     char2int = {c: i for i, c in enumerate(char_set)}
-    int_data = [char2int[c] for c in data]
+
+    int_data = []
+    for i in range(len(data)):
+        int_data.append([])
+        for j in range(len(data[0])):
+            int_data[i].append(char2int[data[i][j]])
     return torch.tensor(int_data).long()
 
 def decode_str_data(data):
@@ -60,9 +64,10 @@ def get_minibatch(raw_data, batchsize, seq_len, shuffle=True):
     indices = np.arange(0, len_data, batchsize*seq_len)
     if shuffle:
         np.random.shuffle(indices)
-    for minibatch_start in indices:
-        if minibatch_start+batchsize*seq_len < len_data:
-            yield encode_str_data(raw_data[minibatch_start: minibatch_start+batchsize*seq_len]).view(seq_len, batchsize,)
+    for i in range(len(indices)):
+        starts = indices[i:i+batchsize]
+        texts = [raw_data[start:start+seq_len] for start in starts]
+        yield encode_str_data(texts).T
 
 if __name__ == '__main__':
     data_path = '../corpus/paul_graham_essay.txt'
