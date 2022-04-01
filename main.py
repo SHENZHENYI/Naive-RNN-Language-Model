@@ -60,7 +60,7 @@ def train_one_epoch(model, raw_data, loss_fn, optimizer, batchsize, device, seq_
             save_model(model, model_path)
     return sum(loss_meter)/len(loss_meter)
 
-def predict(model, raw_data, device, vocab, seq_len=200):
+def predict(model, raw_data, device, vocab, seed=None, seq_len=200):
     '''Predict a sequence with a length of 200 when fed with a random char
 
     Args:
@@ -74,7 +74,8 @@ def predict(model, raw_data, device, vocab, seq_len=200):
     model.eval()
     hidden = None
     rand_index = random.randrange(0, len(raw_data)-seq_len)
-    seed = raw_data[rand_index]
+    if seed is None:
+        seed = raw_data[rand_index]
     input = encode_str_data(seed, vocab)
     #input = F.one_hot(encode_str_data(input_seq), num_classes=95).to(torch.float32)
     out_str = []
@@ -84,13 +85,18 @@ def predict(model, raw_data, device, vocab, seq_len=200):
         sample = random.choices(vocab, weights=probs)[0] # sample with the prob
         input = encode_str_data(sample, vocab)
         out_str.append(sample)
+    print('*'*60)
+    print(f'The predicted string with a starting seed of {seed}')
+    print('*'*60)
     print(seed+''.join(out_str))
+    print('*'*60)
+
 
 def save_model(model, save_path):
     torch.save(model.state_dict(), save_path)
 
-def load_model(model, save_path):
-    model.load_state_dict(torch.load(save_path))
+def load_model(model, save_path, device):
+    model.load_state_dict(torch.load(save_path, map_location=device))
 
 def main():
     training_mode = 0 # train or inference
@@ -98,17 +104,18 @@ def main():
     print(f'my device is {device}')
 
     data_path = './data/shakespeare.txt'
-    model_path = './weights/rnn.pth'
+    model_path = './weights/shakespeare_e15.pth'
     raw_data, vocab = load_raw_data(data_path)
-    model = RnnModel(vocab_size=len(vocab), emb_size=26, hidden_size=128, num_layers=2).to(device)
+    model = RnnModel(vocab_size=len(vocab), emb_size=len(vocab), hidden_size=512, num_layers=3).to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.002)
     loss_fn = nn.CrossEntropyLoss()
 
     if training_mode:
         train(100, model, raw_data, loss_fn, optimizer, device, vocab, model_path, batchsize=32, seq_len=100, pred_seq_len=200)
     else:
-        load_model(model, model_path)
-        predict(model, raw_data, device, vocab, seq_len=200)
+        starting_char = 'S' # the first char of the predicted lines
+        load_model(model, model_path, device)
+        predict(model, raw_data, device, vocab, seed=starting_char, seq_len=500)
     
 if __name__ == '__main__':
     main()
