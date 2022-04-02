@@ -99,23 +99,23 @@ def load_model(model, save_path, device):
     model.load_state_dict(torch.load(save_path, map_location=device))
 
 def main():
-    training_mode = 0 # train or inference
+    training_mode = 1 # train or inference
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f'my device is {device}')
 
-    data_path = './data/shakespeare.txt'
-    model_path = './weights/shakespeare_e15.pth'
+    data_path = './data/wiki.valid.raw'
+    model_path = './weights/wiki_e15.pth'
     raw_data, vocab = load_raw_data(data_path)
-    model = RnnModel(vocab_size=len(vocab), emb_size=len(vocab), hidden_size=512, num_layers=3).to(device)
+    model = RnnModel(vocab_size=len(vocab), emb_size=len(vocab), hidden_size=128, num_layers=2).to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.002)
     loss_fn = nn.CrossEntropyLoss()
 
     if training_mode:
-        train(100, model, raw_data, loss_fn, optimizer, device, vocab, model_path, batchsize=32, seq_len=100, pred_seq_len=200)
+        train(15, model, raw_data, loss_fn, optimizer, device, vocab, model_path, batchsize=32, seq_len=100, pred_seq_len=200)
     else:
         starting_char = 'S' # the first char of the predicted lines
         load_model(model, model_path, device)
-        predict(model, raw_data, device, vocab, seed=starting_char, seq_len=500)
+        predict(model, raw_data, device, vocab, seed=starting_char, seq_len=800)
     
 if __name__ == '__main__':
     main()
