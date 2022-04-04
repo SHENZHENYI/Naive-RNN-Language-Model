@@ -99,14 +99,14 @@ def load_model(model, save_path, device):
     model.load_state_dict(torch.load(save_path, map_location=device))
 
 def main():
-    training_mode = 1 # train or inference
+    training_mode = 0 # train or inference
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f'my device is {device}')
 
-    data_path = './data/wiki.valid.raw'
-    model_path = './weights/wiki_e15.pth'
+    data_path = './data/sherlock.txt'
+    model_path = './weights/sherlock_e15.pth'
     raw_data, vocab = load_raw_data(data_path)
-    model = RnnModel(vocab_size=len(vocab), emb_size=len(vocab), hidden_size=128, num_layers=2).to(device)
+    model = RnnModel(vocab_size=len(vocab), emb_size=len(vocab), hidden_size=512, num_layers=3).to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.002)
     loss_fn = nn.CrossEntropyLoss()
 
