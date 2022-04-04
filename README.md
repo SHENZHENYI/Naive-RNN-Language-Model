@@ -3,13 +3,14 @@ My first try on training a NLP-related model.
 
 The task is to build a char-level language model via RNN (technically a LSTM) trained on some small txt files(~3MB).
 
-The outcome looks very well.
+The outcome looks good in terms of that all words are spelled correctly given that our model are fed with one bare letter a time. But sadly, many of the sentences seem to be semantically wrong.
 
 Below shows the model trained on 'sherlock.txt' in 15 epochs. To see its performance, I generate 800 letters for each outcome and keep the starting letter to be 'S'.
 
-************************************************************
+---
+# Samples
 The predicted string with a starting seed of S
-************************************************************
+---
 Sheaville wandering, which led me through the death
  of a firm.
 
@@ -32,7 +33,7 @@ Sheaville wandering, which led me through the death
 
  "I creeked down the sort that he will take some much people in once
  did not help the thir
-************************************************************
+---
 Sherlock Holmes
  had blown Ettoor devils in England, flew, when I returned during the
  crime which we might expected that it was my own cases, she disappeared
@@ -47,7 +48,7 @@ Sherlock Holmes
 
  "Greeting! That is why anything make so as I have the horse and collect
  to me and knew he seemed to be a definite, morose intar
-************************************************************
+---
 She knows.
 
  "Certainly so; my dear Watson; but Lucret did a fault
@@ -66,7 +67,7 @@ She knows.
  hard--bedroad, and the lodger sees to the doorway, Mr. Holmes, Sergeant
  I have the only one sound in which she's begtom from his own own in end a
  few moment nothing grew down to
- ************************************************************
+---
 Stanley Hopkins's wealth, the
  inmiting of us of the further side. That dark banker did not
  see whether after they call grew during themselves. At the
@@ -82,7 +83,7 @@ Stanley Hopkins's wealth, the
  if we heard I at last we speak now. I think that so bold that he
  was Chischedimn. Miss Morstan's sleeve at least talk in
  one men--if Small come at my way off him. He is three ruffiant, she expecte
-************************************************************
+---
 So Reipoleou, who drove off his
  profession, connected in his smallows.
 
@@ -99,7 +100,7 @@ So Reipoleou, who drove off his
  ride the men!' he remarked, smiling the sign of water.
 
  "'Well, it is my company--it has been burn
-************************************************************
+---
 Sherlock
  Holmes sat down to all boot my gase, then, one twenty-six
  middle which is slaken. It to settle a gipsy of necks, and, with his
@@ -116,4 +117,6 @@ Sherlock
  mouth upon the skyles. His system was gone with a turn to the end.
 
  The f
-************************************************************
+---
+## Acknowledgements
+I followed choices of hyper-parameters and the datasets according to Nikhil Barhate https://github.com/nikhilbarhate99/Char-RNN-PyTorch
